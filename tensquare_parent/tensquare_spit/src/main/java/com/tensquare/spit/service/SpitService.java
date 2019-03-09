@@ -14,6 +14,7 @@ import util.IdWorker;
 
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -48,6 +49,12 @@ public class SpitService {
      */
     public void add(Spit spit){
         spit.setId(idWorker.nextId()+"");
+        spit.setPublishtime(new Date());//发布日期
+        spit.setVisits(0);//浏览量
+        spit.setShare(0);//分享数
+        spit.setThumbup(0);//点赞数
+        spit.setComment(0);//回复数
+        spit.setState("1");//状态
         spitDao.save(spit);
 
 
