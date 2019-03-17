@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import util.IdWorker;
 
@@ -30,6 +31,9 @@ public class SpitService {
     @Autowired
     private IdWorker idWorker;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     /**
      * 查询所有
      */
@@ -40,7 +44,24 @@ public class SpitService {
     /**
      * 查询一个
      */
-    public Spit findById(String id){
+    public Spit findById(String id,String userid){
+        //从redis中获取数据,判断此用户是否浏览过此吐槽
+        String flag = (String)redisTemplate.opsForValue().get("visits_"+userid+"_"+id);
+        if(flag==null){
+            //1.构建查询条件
+            Query query = new Query();
+            query.addCriteria(Criteria.where("_id").is(id));
+
+            //2.构建更新对象
+            Update update = new Update();
+            update.inc("visits",1);
+
+            //3.使用MongoTemplae调用方法
+            mongoTemplate.updateFirst(query,update,"spit");
+            //记录此用户浏览过此吐槽信息
+            redisTemplate.opsForValue().set("visits_"+userid+"_"+id,"1");
+        }
+
         return spitDao.findById(id).get();
     }
 

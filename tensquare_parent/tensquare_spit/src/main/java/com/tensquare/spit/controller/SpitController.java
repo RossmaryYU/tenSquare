@@ -39,7 +39,9 @@ public class SpitController {
      */
     @RequestMapping(value = "/{spitid}",method = RequestMethod.GET)
     public Result findById(@PathVariable String spitid){
-        return new Result(true,StatusCode.OK,"查询成功",spitService.findById(spitid));
+        //模拟当前登录用户
+        String userid = "1001";
+        return new Result(true,StatusCode.OK,"查询成功",spitService.findById(spitid,userid));
     }
 
     /**
@@ -106,7 +108,7 @@ public class SpitController {
 
         spitService.thumbup(spitid);
 
-        //把该用户已经对该吐槽的记录存入redis
+        //把该用户今天赞过该吐槽的记录存入redis(有效期一天)
         redisTemplate.opsForValue().set("thumbup_"+userid+"_"+spitid,"1",1, TimeUnit.DAYS);
         return new Result(true,StatusCode.OK,"点赞成功");
     }
